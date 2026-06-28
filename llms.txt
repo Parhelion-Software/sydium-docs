@@ -1,0 +1,18 @@
+# Sydium API
+
+Programmatic social media management: publish, schedule, analytics, AI generation. Base: https://api.sydium.com
+
+## Endpoints
+- GET /v1/accounts - list connected accounts
+- GET /v1/platforms - per-platform capabilities
+- POST /v1/media/upload-url - presigned upload
+- POST /v1/media/from-url - ingest media from a URL
+- POST /v1/posts - publish now or schedule (per-target operation)
+- GET /v1/posts/{id} - operation status
+- DELETE /v1/posts/{id} - cancel scheduled targets
+- GET /v1/analytics - account time-series
+- POST /v1/generate - AI caption
+- POST /v1/mcp - MCP server (stateless Streamable HTTP)
+
+## Auth
+Bearer API key (sk_live_/sk_test_), scoped. See /authentication.

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Sydium API",
+  "theme": "mint",
+  "navigation": {
+    "tabs": [
+      { "tab": "Documentation", "groups": [{ "group": "Getting Started", "pages": ["quickstart", "authentication", "errors"] }] },
+      { "tab": "API Reference", "openapi": "api-reference/openapi.yaml" }
+    ]
+  }
+}

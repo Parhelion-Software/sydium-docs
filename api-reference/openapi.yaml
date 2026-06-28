@@ -1,0 +1,381 @@
+openapi: 3.1.0
+info:
+  title: Sydium Public API
+  version: "1.0.0"
+servers:
+  - url: https://api.sydium.com
+components:
+  securitySchemes:
+    ApiKey:
+      type: http
+      scheme: bearer
+      description: Opaque API key (sk_live_... / sk_test_...)
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      properties:
+        success: { const: false }
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [unauthorized, forbidden, insufficient_permissions, not_found, unprocessable, rate_limited, invalid_state, external_service_error, internal_error]
+            message: { type: string }
+        meta: { type: object }
+    MediaUploadUrlRequest:
+      type: object
+      required: [contentType, fileSize]
+      properties:
+        contentType: { type: string }
+        fileSize: { type: integer }
+    MediaFromUrlRequest:
+      type: object
+      required: [url]
+      properties: { url: { type: string, format: uri } }
+    CreatePostRequest:
+      type: object
+      required: [targets]
+      properties:
+        caption: { type: string }
+        media: { type: array, items: { type: string } }
+        scheduleAt: { type: string, format: date-time }
+        targets:
+          type: array
+          items:
+            type: object
+            required: [platform]
+            properties:
+              platform: { type: string }
+              postType: { type: string }
+              options: { type: object }
+    GenerateRequest:
+      type: object
+      required: [topic]
+      properties:
+        topic: { type: string }
+        platform: { type: string }
+        tone: { type: string }
+        language: { type: string }
+    Account:
+      type: object
+      required: [platform, username, displayName, profilePicture]
+      properties:
+        platform: { type: string }
+        username: { type: [string, "null"] }
+        displayName: { type: [string, "null"] }
+        profilePicture: { type: [string, "null"] }
+    AccountsResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [accounts]
+          properties:
+            accounts:
+              type: array
+              items: { $ref: "#/components/schemas/Account" }
+        meta: { type: object }
+    PlatformCapability:
+      type: object
+      required: [platform, captionLimit, maxMediaItems, mediaTypes]
+      properties:
+        platform: { type: string }
+        captionLimit: { type: integer }
+        titleLimit: { type: [integer, "null"] }
+        descriptionLimit: { type: [integer, "null"] }
+        maxMediaItems: { type: integer }
+        mediaTypes: { type: array, items: { type: string } }
+        media: { type: [object, "null"] }
+    PlatformCapabilitiesResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [platforms]
+          properties:
+            platforms: { type: array, items: { $ref: "#/components/schemas/PlatformCapability" } }
+        meta: { type: object }
+    SinglePlatformCapabilityResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data: { $ref: "#/components/schemas/PlatformCapability" }
+        meta: { type: object }
+    HealthResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [status, version]
+          properties:
+            status: { type: string }
+            version: { type: string }
+        meta: { type: object }
+    MediaUrlResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [publicUrl, key]
+          properties:
+            uploadUrl: { type: string }
+            publicUrl: { type: string }
+            key: { type: string }
+        meta: { type: object }
+    OperationTarget:
+      type: object
+      required: [platform, status]
+      properties:
+        platform: { type: string }
+        status: { type: string, enum: [scheduled, processing, published, failed, cancelled] }
+        postId: { type: [string, "null"] }
+        url: { type: [string, "null"] }
+        error: { type: [object, "null"] }
+    Operation:
+      type: object
+      required: [id, status, targets]
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [scheduled, processing, completed, partially_failed, partially_cancelled, failed, cancelled] }
+        targets: { type: array, items: { $ref: "#/components/schemas/OperationTarget" } }
+    OperationResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data: { $ref: "#/components/schemas/Operation" }
+        meta: { type: object }
+    AnalyticsResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [range, days]
+          properties:
+            range:
+              type: object
+              properties: { from: { type: string }, to: { type: string } }
+            days:
+              type: array
+              items:
+                type: object
+                required: [date, totals]
+                properties:
+                  date: { type: string }
+                  totals: { type: object }
+        meta: { type: object }
+    GenerateResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [text]
+          properties:
+            text: { type: string }
+            tokensUsed: { type: integer }
+        meta: { type: object }
+security:
+  - ApiKey: []
+paths:
+  /v1/accounts:
+    get:
+      operationId: listAccounts
+      summary: List connected accounts for the key's team
+      responses:
+        "200":
+          description: Connected accounts
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountsResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/platforms:
+    get:
+      operationId: listPlatformCapabilities
+      summary: Per-platform capability limits
+      responses:
+        "200":
+          description: Capabilities
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlatformCapabilitiesResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/platforms/{platform}:
+    get:
+      operationId: getPlatformCapability
+      summary: Capability limits for a single platform
+      parameters:
+        - { name: platform, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Single platform capability
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SinglePlatformCapabilityResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "404": { description: Unknown platform, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/health:
+    get:
+      operationId: health
+      summary: Liveness probe (no auth)
+      security: []
+      responses:
+        "200":
+          description: Service health
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HealthResponse" }
+        "429": { description: Rate limited (edge applies a per-IP ceiling to all paths), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/media/upload-url:
+    post:
+      operationId: createMediaUploadUrl
+      summary: Mint a presigned upload URL
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/MediaUploadUrlRequest" } } }
+      responses:
+        "201":
+          description: Upload URL
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaUrlResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/media/from-url:
+    post:
+      operationId: createMediaFromUrl
+      summary: Ingest media from a public URL into storage
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/MediaFromUrlRequest" } } }
+      responses:
+        "201":
+          description: Stored media reference
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaUrlResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/posts:
+    post:
+      operationId: createPost
+      summary: Publish now to one or more connected platforms
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/CreatePostRequest" } } }
+      responses:
+        "201":
+          description: Operation created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OperationResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/posts/{id}:
+    get:
+      operationId: getPost
+      summary: Operation status with per-target results
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Operation status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OperationResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "404": { description: Operation not found, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+    delete:
+      operationId: cancelPost
+      summary: Cancel scheduled/in-flight targets of an operation
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Operation after cancellation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OperationResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "404": { description: Operation not found, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/analytics:
+    get:
+      operationId: getAnalytics
+      summary: Per-day account analytics time-series
+      parameters:
+        - { name: from, in: query, required: false, schema: { type: string, format: date } }
+        - { name: to, in: query, required: false, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Analytics
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AnalyticsResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/generate:
+    post:
+      operationId: generateCaption
+      summary: Generate a social caption with AI
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/GenerateRequest" } } }
+      responses:
+        "200":
+          description: Generated caption
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GenerateResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "500": { description: Generation failed, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/mcp:
+    post:
+      operationId: mcp
+      summary: MCP server (stateless Streamable HTTP, JSON-RPC 2.0). Send Accept= application/json, text/event-stream.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, description: "JSON-RPC 2.0 request (tools/list, tools/call)" } } }
+      responses:
+        "200": { description: JSON-RPC result, content: { application/json: { schema: { type: object } } } }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "406": { description: Missing text/event-stream in Accept }

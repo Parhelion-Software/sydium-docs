@@ -1,0 +1,5 @@
+---
+title: Errors
+---
+
+Errors return a JSON body `{ "success": false, "error": { "code", "message" } }` with a standard HTTP status: `401` unauthenticated, `403` insufficient scope/permission, `422` validation, `429` rate-limited / insufficient tokens, `404` not found.
