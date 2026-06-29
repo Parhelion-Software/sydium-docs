@@ -22,7 +22,7 @@ components:
           properties:
             code:
               type: string
-              enum: [unauthorized, forbidden, insufficient_permissions, not_found, unprocessable, rate_limited, invalid_state, external_service_error, internal_error]
+              enum: [bad_request, unauthorized, forbidden, insufficient_permissions, not_found, unprocessable, payload_too_large, rate_limited, invalid_state, external_service_error, internal_error]
             message: { type: string }
         meta: { type: object }
     MediaUploadUrlRequest:
@@ -319,7 +319,12 @@ paths:
         "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
     delete:
       operationId: cancelPost
-      summary: Cancel scheduled/in-flight targets of an operation
+      summary: Cancel still-scheduled targets of an operation
+      description: >-
+        Cancels only targets still in the `scheduled` state. Targets that have already begun
+        publishing (`processing`) or reached a terminal state (`published`/`failed`) are left
+        unchanged - cancellation never races an in-flight publish. Returns the operation's
+        current per-target state after cancellation.
       parameters:
         - { name: id, in: path, required: true, schema: { type: string } }
       responses:
