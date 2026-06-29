@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "name": "Sydium API",
   "theme": "mint",
-  "logo": { "light": "/logo.png", "dark": "/logo.png" },
+  "logo": { "light": "/logo-light.png", "dark": "/logo-dark.png" },
   "favicon": "/favicon.svg",
   "colors": {
     "primary": "#65A30D",
