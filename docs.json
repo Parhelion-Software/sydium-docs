@@ -2,10 +2,29 @@
   "$schema": "https://mintlify.com/docs.json",
   "name": "Sydium API",
   "theme": "mint",
+  "logo": { "light": "/logo.png", "dark": "/logo.png" },
+  "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#22C55E",
-    "dark": "#15803D"
+    "primary": "#65A30D",
+    "light": "#A3E635",
+    "dark": "#4D7C0F"
+  },
+  "fonts": {
+    "heading": { "family": "Space Grotesk" },
+    "body": { "family": "Inter" }
+  },
+  "navbar": {
+    "primary": { "type": "button", "label": "Go to Sydium", "href": "https://sydium.com" }
+  },
+  "footer": {
+    "socials": { "x": "https://x.com/DanutPralea", "github": "https://github.com/Parhelion-Software" }
+  },
+  "seo": {
+    "metatags": {
+      "og:image": "/og-image.png",
+      "twitter:image": "/og-image.png",
+      "twitter:card": "summary_large_image"
+    }
   },
   "navigation": {
     "tabs": [
