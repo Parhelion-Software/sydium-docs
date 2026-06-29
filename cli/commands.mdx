@@ -7,21 +7,19 @@ Every command prints JSON to stdout, so you can pipe it into `jq` or a script.
 
 ## auth:login
 
-Save an API key (and optionally a custom host).
+Save your API key.
 
 ```bash
 sydium auth:login --key sk_live_...
-sydium auth:login --key sk_test_... --url https://api.thesydium.com
 ```
 
 | Flag | Required | Description |
 | --- | --- | --- |
-| `--key` | yes | Your API key (`sk_live_...` or `sk_test_...`) |
-| `--url` | no | Override the API base URL (self-hosted / staging) |
+| `--key` | yes | Your `sk_live_...` API key |
 
 ## auth:status
 
-Show the saved host and whether a key is configured (the key is masked).
+Show whether the CLI is authenticated (the key is masked).
 
 ```bash
 sydium auth:status

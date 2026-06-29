@@ -1,11 +1,11 @@
 ---
 title: Introduction
-description: Connect AI agents to Sydium with the Model Context Protocol (MCP)
+description: Drive Sydium from your AI agent over MCP
 ---
 
-The Model Context Protocol (MCP) lets AI agents talk to Sydium directly - list your accounts, draft captions in your brand voice, publish, schedule, cancel, and pull analytics - all through natural language.
+Connect an AI agent to Sydium and run your accounts by talking to it - draft in your brand voice, publish, schedule, cancel, and pull analytics.
 
-Point any MCP-compatible client (Claude, ChatGPT, Cursor) at the Sydium MCP server and run your social media by just asking.
+The connect is one browser click: no API keys to paste, no developer app to register. Sydium's MCP server is a real OAuth 2.1 server with dynamic client registration, so the agent registers itself and you just approve the scopes. Works with Claude, ChatGPT, Cursor, or any MCP client.
 
 **Endpoint**
 
@@ -15,7 +15,7 @@ https://api.sydium.com/v1/mcp
 
 ## How it works
 
-Sydium exposes an MCP server with **7 tools**. Three steps, and there's nothing to install or register:
+Your agent gets **7 tools**. Connecting takes three steps - nothing to install:
 
 <Steps>
   <Step title="Authorize once">
@@ -47,11 +47,7 @@ Sydium exposes an MCP server with **7 tools**. Three steps, and there's nothing 
 
 ## Authentication
 
-Connecting is **one click, no API keys to paste.** Sydium's MCP server is a full OAuth 2.1 resource server with **dynamic client registration** - your MCP client registers itself automatically, then sends you to a Sydium consent screen where you click **Authorize**. You never copy a token, and nothing happens outside the scopes you approve.
-
-<Info>
-  Unlike most tools, you do **not** need to register a developer app or generate an API key to use Sydium over MCP. Add the endpoint to your client and authorize in the browser.
-</Info>
+Your client connects over OAuth: it sends you to a Sydium consent screen, you pick **Authorize**, and the agent gets a scoped token. The agent never sees a password, and it can never do more than the scopes you grant - or more than your own team role allows. The [Client setup](/mcp/connect) guide has the per-client steps and a walkthrough of the consent screen.
 
 ## Connect your client
 

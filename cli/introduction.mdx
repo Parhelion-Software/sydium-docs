@@ -3,7 +3,7 @@ title: Introduction
 description: Drive Sydium from your terminal and scripts
 ---
 
-The Sydium CLI wraps the [REST API](/quickstart) so you can publish, schedule, cancel, list accounts, and pull analytics from a shell - handy for cron jobs, CI pipelines, and quick one-offs.
+Run Sydium from your terminal: publish, schedule, cancel, list accounts, and pull analytics without opening the app. Handy for cron jobs, CI, and quick one-offs. (It calls the [REST API](/quickstart) under the hood.)
 
 ## Install
 
@@ -38,10 +38,6 @@ This saves your key locally. Check it any time:
 ```bash
 sydium auth:status
 ```
-
-<Note>
-  Use `sk_test_...` keys against staging. Point the CLI at a non-default host with `--url` on `auth:login` (handy for self-hosted setups).
-</Note>
 
 ## Quick start
 
