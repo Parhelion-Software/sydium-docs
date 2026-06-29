@@ -1,0 +1,93 @@
+---
+title: Tools reference
+description: The tools the Sydium MCP server exposes, with input schemas
+---
+
+Every tool is scoped. A connected agent can only call a tool if the scope was granted on the consent screen, and never beyond your team role.
+
+## list_accounts
+
+<ParamField path="scope" type="accounts:read" />
+
+List the team's connected social accounts. No arguments. Returns each account's platform and handle.
+
+## get_platform_capabilities
+
+<ParamField path="scope" type="capabilities:read" />
+
+Per-platform posting limits, formats, and supported post types.
+
+<ParamField body="platform" type="string" optional>
+  A single platform (for example `instagram`, `youtube`, `linkedin`). Omit to get every platform.
+</ParamField>
+
+## generate_caption
+
+<ParamField path="scope" type="generate:write" />
+
+Draft a caption in your brand voice.
+
+<ParamField body="topic" type="string" required>
+  What the post is about (1-2000 characters).
+</ParamField>
+<ParamField body="platform" type="string" optional>
+  Target platform, so the draft fits its norms and limits.
+</ParamField>
+<ParamField body="tone" type="string" optional>
+  A tone hint (for example `casual`, `professional`).
+</ParamField>
+<ParamField body="language" type="string" optional>
+  Output language.
+</ParamField>
+
+## publish_post
+
+<ParamField path="scope" type="posts:write" />
+
+Publish now, or schedule for later, to one or more platforms. Returns an operation `id`, a rollup `status`, and per-target results.
+
+<ParamField body="caption" type="string" optional>
+  The post text.
+</ParamField>
+<ParamField body="media" type="string[]" optional>
+  Up to 35 **Sydium-hosted** media URLs. Upload media in the Sydium app or via the REST API first; arbitrary external URLs are rejected.
+</ParamField>
+<ParamField body="scheduleAt" type="string (ISO 8601)" optional>
+  A future timestamp with offset (for example `2026-07-01T09:00:00Z`). Omit to publish immediately.
+</ParamField>
+<ParamField body="targets" type="object[]" required>
+  1-10 targets, each `{ platform, postType?, options? }`. `postType` and `options` are platform-specific (for example a YouTube `short`).
+</ParamField>
+
+## get_post_status
+
+<ParamField path="scope" type="posts:read" />
+
+Per-target status of a publish or schedule operation.
+
+<ParamField body="id" type="string" required>
+  The operation `id` returned by `publish_post`.
+</ParamField>
+
+## cancel_post
+
+<ParamField path="scope" type="posts:write" />
+
+Cancel a scheduled operation. Only targets that are **still scheduled** are cancelled - a target already publishing or published is left untouched. Returns the operation's state after cancellation.
+
+<ParamField body="id" type="string" required>
+  The operation `id` to cancel.
+</ParamField>
+
+## get_analytics
+
+<ParamField path="scope" type="analytics:read" />
+
+Account analytics as a daily time-series.
+
+<ParamField body="from" type="string (YYYY-MM-DD)" optional>
+  Start date. Defaults to 30 days ago.
+</ParamField>
+<ParamField body="to" type="string (YYYY-MM-DD)" optional>
+  End date. Defaults to today.
+</ParamField>

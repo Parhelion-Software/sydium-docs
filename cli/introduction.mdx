@@ -1,0 +1,64 @@
+---
+title: Introduction
+description: Drive Sydium from your terminal and scripts
+---
+
+The Sydium CLI wraps the [REST API](/quickstart) so you can publish, schedule, cancel, list accounts, and pull analytics from a shell - handy for cron jobs, CI pipelines, and quick one-offs.
+
+## Install
+
+<CodeGroup>
+
+```bash npm
+npm install -g @sydium/cli
+```
+
+```bash npx
+npx @sydium/cli --help
+```
+
+</CodeGroup>
+
+The binary is `sydium`. Verify it:
+
+```bash
+sydium --help
+```
+
+## Authenticate
+
+The CLI uses an API key. Grab one from your Sydium account settings, then:
+
+```bash
+sydium auth:login --key sk_live_...
+```
+
+This saves your key locally. Check it any time:
+
+```bash
+sydium auth:status
+```
+
+<Note>
+  Use `sk_test_...` keys against staging. Point the CLI at a non-default host with `--url` on `auth:login` (handy for self-hosted setups).
+</Note>
+
+## Quick start
+
+```bash
+# what's connected
+sydium accounts:list
+
+# publish now to two platforms
+sydium posts:create --platforms x,linkedin --caption "Shipping > talking."
+
+# schedule for later
+sydium posts:create --platforms linkedin --caption "Recap thread" --schedule-at 2026-07-01T09:00:00Z
+
+# pull last month's analytics
+sydium analytics:get --from 2026-06-01 --to 2026-06-30
+```
+
+<Card title="All commands" icon="terminal" href="/cli/commands">
+  The full command and flag reference.
+</Card>

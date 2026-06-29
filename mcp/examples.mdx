@@ -1,0 +1,59 @@
+---
+title: Examples
+description: Things you can ask an agent connected to Sydium
+---
+
+Once your client is [connected](/mcp/connect), you drive everything in plain language. The agent picks the right tools and shows you what it did.
+
+## Publish now
+
+```
+Post this to all my accounts: "Shipping > talking. New build is live."
+```
+
+The agent calls `list_accounts`, then `publish_post` with your text across every connected target.
+
+## Schedule for later
+
+```
+Draft a post about our pricing change in my voice and schedule it
+for Friday at 9am on LinkedIn and X.
+```
+
+The agent calls `generate_caption`, then `publish_post` with `scheduleAt` set to Friday 9am and two targets.
+
+## Cancel a scheduled post
+
+```
+Actually, cancel that Friday post.
+```
+
+The agent calls `cancel_post` with the operation id from the previous step. Only targets still scheduled are cancelled.
+
+## Check status
+
+```
+Did my morning posts go out?
+```
+
+The agent calls `get_post_status` and reports the per-platform result (published, scheduled, or failed).
+
+## Pull analytics
+
+```
+How did last month do across my accounts?
+```
+
+The agent calls `get_analytics` for the last 30 days and summarizes reach, engagement, and growth.
+
+## Post to a specific format
+
+```
+Publish my new clip to YouTube as a Short with this caption: ...
+```
+
+The agent calls `get_platform_capabilities` to confirm the post type, then `publish_post` with a `youtube` target and the `short` post type.
+
+<Note>
+  You always stay in control. The agent shows the draft and the action it is about to take, and nothing posts outside the scopes you approved when you connected.
+</Note>

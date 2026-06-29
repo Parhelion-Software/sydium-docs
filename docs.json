@@ -10,6 +10,11 @@
   "navigation": {
     "tabs": [
       { "tab": "Documentation", "groups": [{ "group": "Getting Started", "pages": ["quickstart", "authentication", "errors"] }] },
+      { "tab": "MCP", "groups": [
+        { "group": "Getting Started", "pages": ["mcp/introduction", "mcp/connect"] },
+        { "group": "Reference", "pages": ["mcp/tools", "mcp/examples"] }
+      ] },
+      { "tab": "CLI", "groups": [{ "group": "Getting Started", "pages": ["cli/introduction", "cli/commands"] }] },
       { "tab": "API Reference", "openapi": "api-reference/openapi.yaml" }
     ]
   }

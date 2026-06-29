@@ -1,0 +1,101 @@
+---
+title: Commands
+description: Full command and flag reference for the Sydium CLI
+---
+
+Every command prints JSON to stdout, so you can pipe it into `jq` or a script.
+
+## auth:login
+
+Save an API key (and optionally a custom host).
+
+```bash
+sydium auth:login --key sk_live_...
+sydium auth:login --key sk_test_... --url https://api.thesydium.com
+```
+
+| Flag | Required | Description |
+| --- | --- | --- |
+| `--key` | yes | Your API key (`sk_live_...` or `sk_test_...`) |
+| `--url` | no | Override the API base URL (self-hosted / staging) |
+
+## auth:status
+
+Show the saved host and whether a key is configured (the key is masked).
+
+```bash
+sydium auth:status
+```
+
+## accounts:list
+
+List your connected social accounts.
+
+```bash
+sydium accounts:list
+```
+
+## platforms:list
+
+List supported platforms and their posting capabilities.
+
+```bash
+sydium platforms:list
+```
+
+## posts:create
+
+Publish now, or schedule, to one or more platforms.
+
+```bash
+sydium posts:create --platforms x,linkedin --caption "Hello world"
+sydium posts:create --platforms linkedin --caption "Later" --schedule-at 2026-07-01T09:00:00Z
+```
+
+| Flag | Required | Description |
+| --- | --- | --- |
+| `--platforms` | yes | Comma-separated target platforms |
+| `--caption` | no | Post text |
+| `--media` | no | Comma-separated Sydium-hosted media URLs |
+| `--schedule-at` | no | Future ISO 8601 timestamp; omit to publish now |
+
+Returns an operation `id` you can pass to `posts:get` and `posts:cancel`.
+
+## posts:get
+
+Per-target status of an operation.
+
+```bash
+sydium posts:get op_6d28cc8ebc8dde89f1f3fa19
+```
+
+## posts:cancel
+
+Cancel a scheduled operation (only targets still scheduled are cancelled).
+
+```bash
+sydium posts:cancel op_6d28cc8ebc8dde89f1f3fa19
+```
+
+## analytics:get
+
+Account analytics over a date range (defaults to the last 30 days). Dates are `YYYY-MM-DD`.
+
+```bash
+sydium analytics:get --from 2026-06-01 --to 2026-06-30
+```
+
+## generate
+
+Draft a caption in your brand voice.
+
+```bash
+sydium generate --topic "our new pricing" --platform linkedin --tone professional
+```
+
+| Flag | Required | Description |
+| --- | --- | --- |
+| `--topic` | yes | What the post is about |
+| `--platform` | no | Target platform |
+| `--tone` | no | Tone hint |
+| `--language` | no | Output language |

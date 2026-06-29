@@ -1,0 +1,68 @@
+---
+title: Client setup
+description: Connect Claude, ChatGPT, or Cursor to the Sydium MCP server
+---
+
+The Sydium MCP server lives at:
+
+```
+https://api.sydium.com/v1/mcp
+```
+
+Connecting is the same everywhere: add that URL as a custom MCP server, then click **Authorize** on the Sydium consent screen. There is **nothing to register and no key to paste** - the client registers itself and you approve access in the browser.
+
+<Tabs>
+  <Tab title="Claude Desktop">
+    <Steps>
+      <Step title="Open the connector dialog">
+        Go to **Settings -> Connectors -> Add custom connector**.
+      </Step>
+      <Step title="Add Sydium">
+        Set the name to `Sydium` and the URL to `https://api.sydium.com/v1/mcp`. Leave the optional **OAuth Client ID / Secret** fields blank - Sydium registers your client automatically.
+      </Step>
+      <Step title="Authorize">
+        Click **Add**. Your browser opens the Sydium consent screen. Review the access and click **Authorize**.
+      </Step>
+      <Step title="Use it">
+        Back in a chat, Sydium's tools are available. Try: *"List my connected accounts."*
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="ChatGPT">
+    <Steps>
+      <Step title="Open connectors">
+        In **Settings -> Connectors**, choose to add a custom connector / MCP server.
+      </Step>
+      <Step title="Add the endpoint">
+        Enter `https://api.sydium.com/v1/mcp`. Leave any optional OAuth client fields blank.
+      </Step>
+      <Step title="Authorize">
+        Approve access on the Sydium consent screen that opens.
+      </Step>
+    </Steps>
+    <Note>Custom MCP connectors are rolling out across ChatGPT tiers; the exact menu names may differ in your build.</Note>
+  </Tab>
+  <Tab title="Cursor">
+    Add Sydium to your MCP configuration:
+
+    ```json
+    {
+      "mcpServers": {
+        "sydium": {
+          "url": "https://api.sydium.com/v1/mcp"
+        }
+      }
+    }
+    ```
+
+    Cursor will prompt you to authorize in the browser on first use.
+  </Tab>
+</Tabs>
+
+## What the consent screen shows
+
+The Authorize screen names the client that is connecting, the workspace it will access, and the exact scopes requested (for example "Read your connected accounts", "Publish and schedule posts"). Nothing happens outside the scopes you approve, and a connected agent can never exceed your own team role.
+
+## Disconnecting
+
+Remove the connector in your client to stop new requests. To revoke access from Sydium's side, sign out the session or rotate it from your account settings.
