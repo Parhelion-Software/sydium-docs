@@ -15,20 +15,19 @@ https://api.sydium.com/v1/mcp
 
 ## How it works
 
-Sydium exposes an MCP server that provides **7 tools**. Your agent connects once, discovers the tools and their schemas, and calls them on your behalf.
+Sydium exposes an MCP server with **7 tools**. Three steps, and there's nothing to install or register:
 
-```mermaid
-sequenceDiagram
-    participant Agent as AI Agent
-    participant MCP as Sydium MCP
-    participant Sydium as Sydium
-    Agent->>MCP: Connect (one-click OAuth)
-    MCP-->>Agent: List available tools
-    Agent->>MCP: Call a tool (e.g. schedule a post)
-    MCP->>Sydium: Execute
-    Sydium-->>MCP: Result
-    MCP-->>Agent: Tool response
-```
+<Steps>
+  <Step title="Authorize once">
+    Point your client at the Sydium MCP endpoint and click **Authorize** in the browser. No developer app to register, no API keys to paste - Sydium registers your client automatically, and you approve exactly which scopes it gets.
+  </Step>
+  <Step title="Your agent discovers the tools">
+    On connect, the agent reads the 7 Sydium tools and their schemas - so it knows precisely what it can do and how to call each one.
+  </Step>
+  <Step title="Command in plain language">
+    Ask for what you want - *"publish this everywhere,"* *"schedule the recap for Friday."* The agent calls the right tools and reports back. You keep the final say, always within the scopes you approved.
+  </Step>
+</Steps>
 
 ## Available tools
 
