@@ -1,3 +1,6 @@
+# Single source of truth for the Sydium public API. Auto-synced to docs.sydium.com
+# (Parhelion-Software/sydium-docs, api-reference/openapi.yaml) whenever this file
+# changes on develop, via .github/workflows/sync-docs-openapi.yml.
 openapi: 3.1.0
 info:
   title: Sydium Public API
