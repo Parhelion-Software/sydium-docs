@@ -75,6 +75,16 @@ Cancel a scheduled operation (only targets still scheduled are cancelled).
 sydium posts:cancel op_6d28cc8ebc8dde89f1f3fa19
 ```
 
+## idea
+
+Fetch today's Muse content idea for your team. This is a read - it never generates a new idea or spends tokens.
+
+```bash
+sydium idea
+```
+
+Returns the current idea (`topic`, `angle`, `format`, `hashtags`, `whyItFits`, and an optional `anchor`), or `{ "idea": null }` when none is in window. Paid plans see today's idea; free plans see the current week's.
+
 ## analytics:get
 
 Account analytics over a date range (defaults to the last 30 days). Dates are `YYYY-MM-DD`.

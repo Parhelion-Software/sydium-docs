@@ -40,6 +40,14 @@ Draft a caption in your brand voice.
   Output language.
 </ParamField>
 
+## get_today_idea
+
+<ParamField path="scope" type="ideas:read" />
+
+Fetch today's Muse content idea for the team - the daily, brand-grounded idea Sydium already generated. This is a read: it never generates a new idea or spends tokens. No arguments.
+
+Returns the current idea (`topic`, `angle`, `format`, `hashtags`, `whyItFits`, and an optional `anchor` - the one concrete detail to hang the post on), or `null` when none is in window. Paid plans see today's idea; free plans see the idea for the current week.
+
 ## publish_post
 
 <ParamField path="scope" type="posts:write" />
