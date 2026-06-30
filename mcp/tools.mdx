@@ -77,6 +77,19 @@ Per-target status of a publish or schedule operation.
   The operation `id` returned by `publish_post`.
 </ParamField>
 
+## list_scheduled_posts
+
+<ParamField path="scope" type="posts:read" />
+
+List the team's upcoming scheduled posts. Each entry is one operation with its target platforms, scheduled time, and caption - so an agent can answer "what's scheduled this week?" without knowing any ids. Published and failed posts are not included.
+
+<ParamField body="from" type="string (ISO 8601)" optional>
+  Window start. Omit for everything upcoming.
+</ParamField>
+<ParamField body="to" type="string (ISO 8601)" optional>
+  Window end. Pass `from` and `to` together to bound a range, for example the current week.
+</ParamField>
+
 ## cancel_post
 
 <ParamField path="scope" type="posts:write" />

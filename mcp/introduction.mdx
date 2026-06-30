@@ -15,14 +15,14 @@ https://api.sydium.com/v1/mcp
 
 ## How it works
 
-Your agent gets **8 tools**. Connecting takes three steps - nothing to install:
+Your agent gets **9 tools**. Connecting takes three steps - nothing to install:
 
 <Steps>
   <Step title="Authorize once">
     Point your client at the Sydium MCP endpoint and click **Authorize** in the browser. No developer app to register, no API keys to paste - Sydium registers your client automatically, and you approve exactly which scopes it gets.
   </Step>
   <Step title="Your agent discovers the tools">
-    On connect, the agent reads the 8 Sydium tools and their schemas - so it knows precisely what it can do and how to call each one.
+    On connect, the agent reads the 9 Sydium tools and their schemas - so it knows precisely what it can do and how to call each one.
   </Step>
   <Step title="Command in plain language">
     Ask for what you want - *"publish this everywhere,"* *"schedule the recap for Friday."* The agent calls the right tools and reports back. You keep the final say, always within the scopes you approved.
@@ -39,6 +39,7 @@ Your agent gets **8 tools**. Connecting takes three steps - nothing to install:
 | `get_today_idea` | `ideas:read` | Fetch today's brand-grounded Muse content idea (a read) |
 | `publish_post` | `posts:write` | Publish now or schedule to one or more platforms |
 | `get_post_status` | `posts:read` | Per-target status of a publish or schedule operation |
+| `list_scheduled_posts` | `posts:read` | List upcoming scheduled posts (optional date window) |
 | `cancel_post` | `posts:write` | Cancel a still-scheduled operation |
 | `get_analytics` | `analytics:read` | Account analytics time-series |
 

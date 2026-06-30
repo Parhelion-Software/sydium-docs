@@ -38,6 +38,14 @@ Actually, cancel that Friday post.
 
 The agent calls `cancel_post` with the operation id from the previous step. Only targets still scheduled are cancelled.
 
+## See what's scheduled
+
+```
+What posts do I have scheduled this week?
+```
+
+The agent calls `list_scheduled_posts` with this week's `from`/`to` and lists each scheduled post with its platforms and time - no post ids needed.
+
 ## Check status
 
 ```

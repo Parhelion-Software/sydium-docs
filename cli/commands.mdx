@@ -59,6 +59,17 @@ sydium posts:create --platforms linkedin --caption "Later" --schedule-at 2026-07
 
 Returns an operation `id` you can pass to `posts:get` and `posts:cancel`.
 
+## posts:list
+
+List upcoming scheduled posts. Pass `--from` / `--to` (ISO 8601) to bound a window, for example this week.
+
+```bash
+sydium posts:list
+sydium posts:list --from 2026-06-29 --to 2026-07-05
+```
+
+Each entry is one operation with its `id`, `scheduledFor`, `caption`, and target `platforms`.
+
 ## posts:get
 
 Per-target status of an operation.
