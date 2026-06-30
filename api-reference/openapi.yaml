@@ -193,6 +193,39 @@ components:
             text: { type: string }
             tokensUsed: { type: integer }
         meta: { type: object }
+    TodayIdea:
+      type: object
+      required: [date, grounded, language, topic, angle, format, hashtags, whyItFits]
+      properties:
+        date: { type: string }
+        grounded: { type: boolean }
+        language: { type: string }
+        topic: { type: string }
+        angle: { type: string }
+        format: { type: string }
+        hashtags: { type: array, items: { type: string } }
+        whyItFits: { type: string }
+        anchor: { type: string }
+        citation:
+          type: object
+          required: [source]
+          properties:
+            source: { type: string }
+            url: { type: string }
+    TodayIdeaResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [idea]
+          properties:
+            idea:
+              oneOf:
+                - { $ref: "#/components/schemas/TodayIdea" }
+                - { type: "null" }
+        meta: { type: object }
 security:
   - ApiKey: []
 paths:
@@ -340,6 +373,24 @@ paths:
         "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "404": { description: Operation not found, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/ideas/today:
+    get:
+      operationId: getTodayIdea
+      summary: Fetch today's Muse content idea (a read; does not generate)
+      description: >-
+        Returns the team's current Muse idea, resolved the same way the app does
+        (paid plans see today's idea; free plans see the trailing 7-day idea).
+        This is a read only - it never triggers idea generation or AI spend. When
+        no idea is in window, `data.idea` is `null`.
+      responses:
+        "200":
+          description: Today's idea (or null when none is in window)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TodayIdeaResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
   /v1/analytics:
     get:
