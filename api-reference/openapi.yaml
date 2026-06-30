@@ -160,6 +160,26 @@ components:
         success: { const: true }
         data: { $ref: "#/components/schemas/Operation" }
         meta: { type: object }
+    ScheduledPost:
+      type: object
+      required: [id, scheduledFor, caption, platforms, status]
+      properties:
+        id: { type: string }
+        scheduledFor: { type: string, format: date-time }
+        caption: { type: string }
+        platforms: { type: array, items: { type: string } }
+        status: { type: string, enum: [scheduled] }
+    ScheduledPostsResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [posts]
+          properties:
+            posts: { type: array, items: { $ref: "#/components/schemas/ScheduledPost" } }
+        meta: { type: object }
     AnalyticsResponse:
       type: object
       required: [success, data, meta]
@@ -320,6 +340,26 @@ paths:
         "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
   /v1/posts:
+    get:
+      operationId: listScheduledPosts
+      summary: List upcoming scheduled posts (optionally within a from/to window)
+      description: >-
+        Returns the team's scheduled posts, one entry per operation with its target
+        platforms, sorted by scheduled time. Pass `from`/`to` (ISO 8601) to bound a
+        window - for example the current week. Published and failed posts are not included.
+      parameters:
+        - { name: from, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: to, in: query, required: false, schema: { type: string, format: date-time } }
+      responses:
+        "200":
+          description: Scheduled posts
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScheduledPostsResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
     post:
       operationId: createPost
       summary: Publish now to one or more connected platforms
