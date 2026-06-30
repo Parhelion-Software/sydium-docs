@@ -166,7 +166,9 @@ components:
       properties:
         id: { type: string }
         scheduledFor: { type: string, format: date-time }
-        caption: { type: string }
+        caption:
+          type: string
+          description: Display text for the post, matching the app's queue - the video title for YouTube, the caption for caption-first platforms.
         platforms: { type: array, items: { type: string } }
         status: { type: string, enum: [scheduled] }
     ScheduledPostsResponse:
