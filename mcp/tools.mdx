@@ -9,7 +9,17 @@ Every tool is scoped. A connected agent can only call a tool if the scope was gr
 
 <ParamField path="scope" type="accounts:read" />
 
-List the team's connected social accounts. No arguments. Returns each account's platform and handle.
+List connected social accounts. Returns each account's platform and handle.
+
+<ParamField body="clientId" type="string" optional>
+  An agency client id (see `list_clients`). When set, returns that client's connected accounts instead of the team's own.
+</ParamField>
+
+## list_clients
+
+<ParamField path="scope" type="clients:read" />
+
+List the agency clients under this team - each with its `id`, `name`, and `status`. Pass a client `id` as the `clientId` argument to `publish_post`, `list_accounts`, or `list_scheduled_posts` to act on that client's behalf instead of the team's own accounts. No arguments.
 
 ## get_platform_capabilities
 
@@ -66,6 +76,9 @@ Publish now, or schedule for later, to one or more platforms. Returns an operati
 <ParamField body="targets" type="object[]" required>
   1-10 targets, each `{ platform, postType?, options? }`. `postType` and `options` are platform-specific (for example a YouTube `short`).
 </ParamField>
+<ParamField body="clientId" type="string" optional>
+  An agency client id (see `list_clients`). When set, the post publishes using that client's connected accounts. Connectivity is checked against the client, not the team.
+</ParamField>
 
 ## get_post_status
 
@@ -88,6 +101,9 @@ List the team's upcoming scheduled posts. Each entry is one operation with its t
 </ParamField>
 <ParamField body="to" type="string (ISO 8601)" optional>
   Window end. Pass `from` and `to` together to bound a range, for example the current week.
+</ParamField>
+<ParamField body="clientId" type="string" optional>
+  An agency client id (see `list_clients`). When set, lists only that client's scheduled posts.
 </ParamField>
 
 ## cancel_post

@@ -25,12 +25,21 @@ Show whether the CLI is authenticated (the key is masked).
 sydium auth:status
 ```
 
+## clients:list
+
+List the agency clients under your team (`id`, `name`, `status`). Use a client's `id` with `--client` on `accounts:list`, `posts:create`, and `posts:list` to act on that client's behalf.
+
+```bash
+sydium clients:list
+```
+
 ## accounts:list
 
-List your connected social accounts.
+List connected social accounts. Pass `--client` to list a specific agency client's accounts instead of your team's.
 
 ```bash
 sydium accounts:list
+sydium accounts:list --client cl_9f2a
 ```
 
 ## platforms:list
@@ -56,16 +65,18 @@ sydium posts:create --platforms linkedin --caption "Later" --schedule-at 2026-07
 | `--caption` | no | Post text |
 | `--media` | no | Comma-separated Sydium-hosted media URLs |
 | `--schedule-at` | no | Future ISO 8601 timestamp; omit to publish now |
+| `--client` | no | Agency client id (see `clients:list`); publishes with that client's accounts |
 
 Returns an operation `id` you can pass to `posts:get` and `posts:cancel`.
 
 ## posts:list
 
-List upcoming scheduled posts. Pass `--from` / `--to` (ISO 8601) to bound a window, for example this week.
+List upcoming scheduled posts. Pass `--from` / `--to` (ISO 8601) to bound a window, for example this week. Pass `--client` to list a specific agency client's scheduled posts.
 
 ```bash
 sydium posts:list
 sydium posts:list --from 2026-06-29 --to 2026-07-05
+sydium posts:list --client cl_9f2a
 ```
 
 Each entry is one operation with its `id`, `scheduledFor`, `caption`, and target `platforms`.

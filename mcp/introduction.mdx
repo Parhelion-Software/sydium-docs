@@ -33,7 +33,8 @@ Your agent gets **9 tools**. Connecting takes three steps - nothing to install:
 
 | Tool | Scope | What it does |
 | --- | --- | --- |
-| `list_accounts` | `accounts:read` | List your connected social accounts |
+| `list_accounts` | `accounts:read` | List connected social accounts (yours, or an agency client's via `clientId`) |
+| `list_clients` | `clients:read` | List the agency clients under your team, to act on their behalf |
 | `get_platform_capabilities` | `capabilities:read` | Per-platform posting limits, formats, and post types |
 | `generate_caption` | `generate:write` | Draft a caption in your brand voice |
 | `get_today_idea` | `ideas:read` | Fetch today's brand-grounded Muse content idea (a read) |
@@ -42,6 +43,8 @@ Your agent gets **9 tools**. Connecting takes three steps - nothing to install:
 | `list_scheduled_posts` | `posts:read` | List upcoming scheduled posts (optional date window) |
 | `cancel_post` | `posts:write` | Cancel a still-scheduled operation |
 | `get_analytics` | `analytics:read` | Account analytics time-series |
+
+**Agencies:** call `list_clients` to get your clients, then pass a client's `id` as the `clientId` argument to `publish_post`, `list_accounts`, or `list_scheduled_posts` to act on that client's connected accounts instead of your team's own.
 
 <Card title="Tools reference" icon="wrench" href="/mcp/tools">
   Full input schema and behavior for every tool.
