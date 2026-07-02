@@ -43,6 +43,11 @@ components:
       required: [targets]
       properties:
         caption: { type: string }
+        clientId:
+          type: string
+          description: >-
+            Optional agency client id (see GET /v1/clients). When set, the post is published
+            using that client's connected accounts instead of the team's own.
         media: { type: array, items: { type: string } }
         scheduleAt: { type: string, format: date-time }
         targets:
@@ -82,6 +87,26 @@ components:
             accounts:
               type: array
               items: { $ref: "#/components/schemas/Account" }
+        meta: { type: object }
+    Client:
+      type: object
+      required: [id, name, status]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        status: { type: string }
+    ClientsResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [clients]
+          properties:
+            clients:
+              type: array
+              items: { $ref: "#/components/schemas/Client" }
         meta: { type: object }
     PlatformCapability:
       type: object
@@ -251,10 +276,32 @@ components:
 security:
   - ApiKey: []
 paths:
+  /v1/clients:
+    get:
+      operationId: listClients
+      summary: List the agency clients under the key's team
+      description: >-
+        Returns the team's agency clients (id/name/status). Use a client `id` as the
+        `clientId` parameter on /v1/accounts and /v1/posts to act on that client's behalf.
+      responses:
+        "200":
+          description: Agency clients
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClientsResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
   /v1/accounts:
     get:
       operationId: listAccounts
-      summary: List connected accounts for the key's team
+      summary: List connected accounts for the key's team (or an agency client)
+      parameters:
+        - name: clientId
+          in: query
+          required: false
+          description: Agency client id (see /v1/clients) to list that client's accounts instead of the team's.
+          schema: { type: string }
       responses:
         "200":
           description: Connected accounts
@@ -263,6 +310,7 @@ paths:
               schema: { $ref: "#/components/schemas/AccountsResponse" }
         "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "404": { description: Unknown client, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
   /v1/platforms:
@@ -352,6 +400,11 @@ paths:
       parameters:
         - { name: from, in: query, required: false, schema: { type: string, format: date-time } }
         - { name: to, in: query, required: false, schema: { type: string, format: date-time } }
+        - name: clientId
+          in: query
+          required: false
+          description: Agency client id (see /v1/clients) to list only that client's scheduled posts.
+          schema: { type: string }
       responses:
         "200":
           description: Scheduled posts
@@ -360,6 +413,7 @@ paths:
               schema: { $ref: "#/components/schemas/ScheduledPostsResponse" }
         "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "404": { description: Unknown client, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
     post:
@@ -376,6 +430,7 @@ paths:
               schema: { $ref: "#/components/schemas/OperationResponse" }
         "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "404": { description: Unknown client, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
   /v1/posts/{id}:
