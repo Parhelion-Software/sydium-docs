@@ -282,7 +282,8 @@ paths:
       summary: List the agency clients under the key's team
       description: >-
         Returns the team's agency clients (id/name/status). Use a client `id` as the
-        `clientId` parameter on /v1/accounts and /v1/posts to act on that client's behalf.
+        `clientId` parameter on /v1/accounts, /v1/posts and /v1/ideas/today to act on
+        that client's behalf.
       responses:
         "200":
           description: Agency clients
@@ -477,9 +478,16 @@ paths:
       summary: Fetch today's Muse content idea (a read; does not generate)
       description: >-
         Returns the team's current Muse idea, resolved the same way the app does
-        (paid plans see today's idea; free plans see the trailing 7-day idea).
-        This is a read only - it never triggers idea generation or AI spend. When
-        no idea is in window, `data.idea` is `null`.
+        (paid plans see today's idea; free plans see the trailing 7-day idea), or
+        a specific agency client's current idea when `clientId` is set. This is a
+        read only - it never triggers idea generation or AI spend. When no idea is
+        in window, `data.idea` is `null`.
+      parameters:
+        - name: clientId
+          in: query
+          required: false
+          description: Agency client id (see /v1/clients) to read that client's current idea instead of the team's.
+          schema: { type: string }
       responses:
         "200":
           description: Today's idea (or null when none is in window)
@@ -488,6 +496,7 @@ paths:
               schema: { $ref: "#/components/schemas/TodayIdeaResponse" }
         "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "404": { description: Unknown client, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
   /v1/analytics:
     get:
