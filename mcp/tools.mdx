@@ -90,6 +90,28 @@ Per-target status of a publish or schedule operation.
   The operation `id` returned by `publish_post`.
 </ParamField>
 
+## update_post
+
+<ParamField path="scope" type="posts:write" />
+
+Edit a scheduled operation: change its `caption`, `media`, and/or `scheduleAt`. Only targets that are **still scheduled** are updated - a target already publishing or published is left untouched, and the edit never races an in-flight publish. Omitted fields are left unchanged; `media: []` clears media. You cannot change which platforms the operation posts to - cancel and re-create for that. Returns the operation's state after the edit, or a `409` if no target is still scheduled.
+
+<ParamField body="id" type="string" required>
+  The operation `id` returned by `publish_post`.
+</ParamField>
+<ParamField body="caption" type="string" optional>
+  Replacement post text.
+</ParamField>
+<ParamField body="media" type="string[]" optional>
+  Up to 35 **Sydium-hosted** media URLs (same rules as `publish_post`). Pass `[]` to remove all media.
+</ParamField>
+<ParamField body="scheduleAt" type="string (ISO 8601)" optional>
+  A new future timestamp with offset. The scheduled publish is moved to this time.
+</ParamField>
+<ParamField body="clientId" type="string" optional>
+  An agency client id (see `list_clients`). When set, scopes the edit to that client's post.
+</ParamField>
+
 ## list_scheduled_posts
 
 <ParamField path="scope" type="posts:read" />
