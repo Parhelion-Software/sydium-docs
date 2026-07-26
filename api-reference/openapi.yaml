@@ -59,6 +59,18 @@ components:
               platform: { type: string }
               postType: { type: string }
               options: { type: object }
+    UpdatePostRequest:
+      type: object
+      description: >-
+        At least one of caption/media/scheduleAt must be present. Fields not sent are left
+        unchanged; media:[] clears media. The platform set cannot be changed here.
+      properties:
+        caption: { type: string }
+        clientId:
+          type: string
+          description: Optional agency client id (see GET /v1/clients) to scope the edit to that client's posts.
+        media: { type: array, items: { type: string } }
+        scheduleAt: { type: string, format: date-time }
     GenerateRequest:
       type: object
       required: [topic]
@@ -470,6 +482,32 @@ paths:
         "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "404": { description: Operation not found, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+    patch:
+      operationId: updatePost
+      summary: Edit still-scheduled targets of an operation
+      description: >-
+        Edits the `caption`, `media`, and/or `scheduleAt` of an operation's targets that are
+        still in the `scheduled` state. Omitted fields are left unchanged; `media: []` clears
+        media. Targets already `processing`/`published`/`failed`/`cancelled` are left untouched
+        - an edit never races an in-flight publish. Cannot change which platforms the operation
+        posts to (cancel and re-create for that). Returns `409` if no target is still scheduled.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/UpdatePostRequest" } } }
+      responses:
+        "200":
+          description: Operation after the edit
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OperationResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "404": { description: Operation not found, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "409": { description: "No target still scheduled (already publishing, published, or cancelled)", content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
   /v1/ideas/today:
