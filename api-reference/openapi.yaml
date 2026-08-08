@@ -32,12 +32,40 @@ components:
       type: object
       required: [contentType, fileSize]
       properties:
-        contentType: { type: string }
-        fileSize: { type: integer }
+        contentType:
+          type: string
+          description: >-
+            Must be one of the supported types. An unsupported type is rejected rather
+            than stored, because the file extension is derived from it and an unknown
+            extension makes the publish pipeline misclassify a video as an image.
+          enum:
+            - image/jpeg
+            - image/png
+            - image/gif
+            - image/webp
+            - video/mp4
+            - video/quicktime
+            - video/webm
+        fileSize:
+          type: integer
+          description: >-
+            Bytes. Images are limited to 50MB, video to 2GB. The value is signed into
+            the presigned URL, so a larger upload than declared is rejected by storage.
     MediaFromUrlRequest:
       type: object
       required: [url]
-      properties: { url: { type: string, format: uri } }
+      properties:
+        url:
+          type: string
+          format: uri
+          description: >-
+            A direct, publicly reachable http(s) link to the media itself. Up to three
+            redirects are followed, each destination re-validated and re-pinned. The file is identified by
+            its BYTES, not by the response Content-Type, so application/octet-stream is
+            accepted for a real image or video and an image/* header on an HTML document
+            is not. Images are limited to 50MB and video to 50MB on this path - use
+            /v1/media/upload-url for anything larger, since it streams straight to
+            storage instead of through the API.
     CreatePostRequest:
       type: object
       required: [targets]
@@ -170,9 +198,28 @@ components:
           type: object
           required: [publicUrl, key]
           properties:
-            uploadUrl: { type: string }
-            publicUrl: { type: string }
+            uploadUrl:
+              type: string
+              description: Present only on /v1/media/upload-url. Valid for one hour.
+            publicUrl:
+              type: string
+              description: The value to pass in a post's `media` array.
             key: { type: string }
+            mimeType:
+              type: string
+              description: >-
+                Present on /v1/media/from-url. The type identified from the file's bytes,
+                which is not necessarily what the remote server declared.
+            bytes: { type: integer, description: Present on /v1/media/from-url. }
+            width:
+              type: integer
+              description: Present on /v1/media/from-url when measurable.
+            height:
+              type: integer
+              description: Present on /v1/media/from-url when measurable.
+            duration:
+              type: number
+              description: Seconds. Present on /v1/media/from-url for video when measurable.
         meta: { type: object }
     OperationTarget:
       type: object
@@ -389,6 +436,12 @@ paths:
     post:
       operationId: createMediaFromUrl
       summary: Ingest media from a public URL into storage
+      description: >-
+        Fetches the URL server-side and stores it as this team's media, returning the
+        Sydium URL a post's `media` array requires. The fetch is pinned to the address
+        validated by the SSRF guard, follows at most one redirect, and refuses anything
+        resolving to a non-public address. Also returns the file's measured dimensions
+        and duration where they can be determined.
       requestBody:
         required: true
         content: { application/json: { schema: { $ref: "#/components/schemas/MediaFromUrlRequest" } } }
