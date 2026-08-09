@@ -58,6 +58,32 @@ Fetch today's Muse content idea for the team - the daily, brand-grounded idea Sy
 
 Returns the current idea (`topic`, `angle`, `format`, `hashtags`, `whyItFits`, and an optional `anchor` - the one concrete detail to hang the post on), or `null` when none is in window. Paid plans see today's idea; free plans see the idea for the current week.
 
+## add_media
+
+<ParamField path="scope" type="media:write" />
+
+Store an image or video in Sydium and return the media URL that `publish_post` and `update_post` require. Media must be Sydium-hosted - an external URL passed straight to `publish_post` is rejected - so call this first.
+
+Pass **either** `file` (a file attached to the conversation) **or** `url` (a direct link to the image or video itself, not a web page containing it). Returns the media URL plus its measured size, dimensions and duration, and `acceptedBy` / `rejectedBy` - which platforms will take this file.
+
+Supported: `jpeg`, `png`, `gif`, `webp`, `mp4`, `mov`, `webm`, up to 50MB. HEIC and AVIF (the iPhone photo defaults) are not supported - convert to JPEG first.
+
+The media is removed once its post publishes, so a URL cannot be reused for a second post. Call `add_media` again.
+
+<ParamField body="url" type="string" optional>
+  A direct, publicly reachable link to an image or video file. Redirects are followed and each destination is re-validated.
+</ParamField>
+<ParamField body="file" type="object" optional>
+  A file the user attached to the conversation, supplied by the host as `{ download_url, file_id, mime_type?, file_name? }`. Only hosts that support file parameters populate this - see the note below.
+</ParamField>
+<ParamField body="postType" type="string" optional>
+  The post type this media is for (`reel`, `story`, `carousel`, `short`...). Story and carousel limits are stricter than the platform default, so without it `acceptedBy` is optimistic. Check `rejectedBy` before scheduling.
+</ParamField>
+
+<Note>
+  **File attachments are ChatGPT-only today.** ChatGPT reads the tool's file parameter declaration and passes attachments through, which is what makes drag-and-drop work - on the **web** client; ChatGPT mobile currently sends incomplete file references. Claude connectors have no equivalent mechanism, so there `url` is the only path. If a user wants to post a file from their device and attaching it is not available, ask them for a public link.
+</Note>
+
 ## publish_post
 
 <ParamField path="scope" type="posts:write" />
@@ -68,7 +94,7 @@ Publish now, or schedule for later, to one or more platforms. Returns an operati
   The post text.
 </ParamField>
 <ParamField body="media" type="string[]" optional>
-  Up to 35 **Sydium-hosted** media URLs. Upload media in the Sydium app or via the REST API first; arbitrary external URLs are rejected.
+  Up to 35 **Sydium-hosted** media URLs, as returned by `add_media`. Arbitrary external URLs are rejected.
 </ParamField>
 <ParamField body="scheduleAt" type="string (ISO 8601)" optional>
   A future timestamp with offset (for example `2026-07-01T09:00:00Z`). Omit to publish immediately.
@@ -103,7 +129,7 @@ Edit a scheduled operation: change its `caption`, `media`, and/or `scheduleAt`. 
   Replacement post text.
 </ParamField>
 <ParamField body="media" type="string[]" optional>
-  Up to 35 **Sydium-hosted** media URLs (same rules as `publish_post`). Pass `[]` to remove all media.
+  Up to 35 **Sydium-hosted** media URLs from `add_media` (same rules as `publish_post`). Pass `[]` to remove all media.
 </ParamField>
 <ParamField body="scheduleAt" type="string (ISO 8601)" optional>
   A new future timestamp with offset. The scheduled publish is moved to this time.

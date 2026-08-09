@@ -81,7 +81,7 @@ The agent calls `list_accounts`, `generate_caption`, and `publish_post` (with `s
     Any MCP-compatible client - Claude (desktop and web), ChatGPT, Cursor, and others. See [Client setup](/mcp/connect).
   </Accordion>
   <Accordion title="Can the agent post videos and images?">
-    The agent works with text and captions out of the box. Attaching media through the agent is limited today - media is uploaded and managed in the Sydium app, since agents cannot stream binary uploads. Broader agent-driven media support is planned.
+    Yes. `add_media` stores an image or video and returns the URL that `publish_post` needs, and it tells you which platforms will accept the file before you schedule anything. Give it a public link to the file, or - in ChatGPT on the web - drag the file straight into the conversation. Claude connectors cannot pass attachments yet, so there a link is the way in.
   </Accordion>
   <Accordion title="What can it access?">
     Only the scopes you approve on the consent screen, and never more than your own team role allows.
