@@ -122,8 +122,20 @@ components:
         success: { const: true }
         data:
           type: object
-          required: [accounts]
+          required: [team, accounts]
           properties:
+            team:
+              type: object
+              description: >-
+                The workspace this key or token is bound to. A credential reaches
+                exactly one workspace, fixed when it was created, and cannot be
+                pointed at another - use a separate credential per workspace.
+                Returned here so a caller can tell "wrong workspace" apart from
+                "nothing connected", which otherwise look identical.
+              required: [id, name]
+              properties:
+                id: { type: string }
+                name: { type: string }
             accounts:
               type: array
               items: { $ref: "#/components/schemas/Account" }
