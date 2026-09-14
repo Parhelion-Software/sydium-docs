@@ -84,6 +84,50 @@ The media is removed once its post publishes, so a URL cannot be reused for a se
   **File attachments are ChatGPT-only today.** ChatGPT reads the tool's file parameter declaration and passes attachments through, which is what makes drag-and-drop work - on the **web** client; ChatGPT mobile currently sends incomplete file references. Claude connectors have no equivalent mechanism, so there `url` is the only path. If a user wants to post a file from their device and attaching it is not available, ask them for a public link.
 </Note>
 
+`add_media` is for real photos and videos. Do not generate or upload placeholder or text-only images to stand in for carousel slides - use `draft_carousel`.
+
+## draft_carousel
+
+<ParamField path="scope" type="posts:write" />
+
+Draft a carousel from slide text the agent writes. Sydium stores it as a draft and returns `openUrl`, a link that opens it in the Sydium composer. There the user sees the slides rendered in the brand's carousel style and colors in the Carousel Studio, adjusts them, and schedules the post.
+
+**Nothing is published or scheduled.** An agent cannot see a rendered slide, so a carousel is always approved by a person in Sydium. Give the user `openUrl`.
+
+Returns `draftId`, `openUrl`, the number of `slides`, the `platforms` it is planned for, and `status: "draft"`.
+
+<ParamField body="topic" type="string" required>
+  What the carousel is about, in a sentence (1-300 characters).
+</ParamField>
+<ParamField body="slides" type="object[]" required>
+  3-20 slides in reading order, each `{ headline, body?, altText? }`. The first slide is the cover (a hook as the headline) and the last is the close (what to do next). Keep headlines short (up to 200 characters) and put the substance in `body` (up to 1000).
+</ParamField>
+<ParamField body="coverAlternatives" type="string[]" optional>
+  Up to two other cover hooks the user can switch to in the studio.
+</ParamField>
+<ParamField body="caption" type="string" optional>
+  The post caption. Omit and the user writes it in Sydium.
+</ParamField>
+<ParamField body="goal" type="string" optional>
+  `teach`, `sell`, or `story`. Defaults to `teach`.
+</ParamField>
+<ParamField body="closeAsk" type="string" optional>
+  What the close slide asks for: `save`, `share`, `follow`, or `click`. Defaults to `save`.
+</ParamField>
+<ParamField body="platforms" type="string[]" optional>
+  The platforms to plan it for (for example `instagram`, `linkedin`, `tiktok`). Defaults to `instagram`. The composer opens with these selected.
+</ParamField>
+<ParamField body="language" type="string" optional>
+  ISO 639-1 code. Omit unless the user asks for a specific language - the draft uses the brand voice's language.
+</ParamField>
+<ParamField body="clientId" type="string" optional>
+  An agency client id (see `list_clients`). The draft uses that client's brand voice, and opening it switches Sydium to that client.
+</ParamField>
+
+<Note>
+  The link opens in the workspace the connector was authorized for. A user signed in to a different workspace sees a "could not be opened" message - they switch workspace and open it again.
+</Note>
+
 ## publish_post
 
 <ParamField path="scope" type="posts:write" />
