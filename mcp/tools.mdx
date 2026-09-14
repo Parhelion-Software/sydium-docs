@@ -102,8 +102,8 @@ Returns `draftId`, `openUrl`, the number of `slides`, the `platforms` it is plan
 <ParamField body="slides" type="object[]" required>
   3-20 slides in reading order, each `{ headline, body?, altText? }`. The first slide is the cover (a hook as the headline) and the last is the close (what to do next). Keep headlines short (up to 200 characters) and put the substance in `body` (up to 1000).
 </ParamField>
-<ParamField body="coverAlternatives" type="string[]" optional>
-  Up to two other cover hooks the user can switch to in the studio.
+<ParamField body="coverAlternatives" type="string[]" required>
+  Exactly two other cover hooks, different from the first slide's headline and from each other. The user picks one of the three in the studio.
 </ParamField>
 <ParamField body="caption" type="string" optional>
   The post caption. Omit and the user writes it in Sydium.
