@@ -376,7 +376,7 @@ components:
         success: { const: true }
         data:
           type: object
-          required: [team, canSave, ideas]
+          required: [team, canSave, hasMore, ideas]
           properties:
             team:
               type: object
@@ -385,6 +385,7 @@ components:
                 id: { type: string }
                 name: { type: string }
             canSave: { type: boolean, description: "False when the workspace has no active plan. The list stays readable." }
+            hasMore: { type: boolean, description: "True when the user saved more than the 50 ideas returned." }
             ideas:
               type: array
               maxItems: 50
