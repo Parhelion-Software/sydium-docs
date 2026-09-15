@@ -344,29 +344,39 @@ components:
                 - { $ref: "#/components/schemas/TodayIdea" }
                 - { type: "null" }
         meta: { type: object }
-    IdeaSuggestionSource:
+    ClipSource:
       type: object
       required: [url, title]
       properties:
         url: { type: string, maxLength: 2048, description: "The http or https page the clip came from." }
         title: { type: string, maxLength: 300 }
-    IdeaSuggestion:
+    SaveClipRequest:
       type: object
-      required: [id, kind, text, source, createdAt]
+      required: [text, source]
+      properties:
+        text: { type: string, minLength: 1, maxLength: 5000, description: "The selected text, or the page title for a page clip. Saved verbatim." }
+        source: { $ref: "#/components/schemas/ClipSource" }
+    RecentIdea:
+      type: object
+      required: [id, content, sourceUrl, createdAt]
       properties:
         id: { type: string }
-        kind: { type: string, enum: [text, page] }
-        text: { type: string, description: "The selected text, or the page title for a page clip." }
-        source: { $ref: "#/components/schemas/IdeaSuggestionSource" }
+        content: { type: string }
+        topic: { type: string, description: "Absent when not set." }
+        platform:
+          type: string
+          description: "Absent when the idea is not platform-specific."
+          enum: [instagram, tiktok, youtube, linkedin, twitter, facebook, pinterest, bluesky, threads, mastodon, gbp]
+        sourceUrl: { type: string }
         createdAt: { type: string, format: date-time }
-    IdeaSuggestionsResponse:
+    RecentIdeasResponse:
       type: object
       required: [success, data]
       properties:
         success: { const: true }
         data:
           type: object
-          required: [team, canSave, suggestions]
+          required: [team, canSave, ideas]
           properties:
             team:
               type: object
@@ -374,39 +384,29 @@ components:
               properties:
                 id: { type: string }
                 name: { type: string }
-            canSave: { type: boolean, description: "False when the workspace has no active plan. Suggestions stay readable." }
-            suggestions:
+            canSave: { type: boolean, description: "False when the workspace has no active plan. The list stays readable." }
+            ideas:
               type: array
-              maxItems: 100
-              items: { $ref: "#/components/schemas/IdeaSuggestion" }
+              maxItems: 50
+              items: { $ref: "#/components/schemas/RecentIdea" }
         meta: { type: object }
-    CreateIdeaSuggestionRequest:
+    UpdateIdeaRequest:
       type: object
-      required: [kind, text, source]
+      minProperties: 1
       properties:
-        kind: { type: string, enum: [text, page] }
-        text: { type: string, minLength: 1, maxLength: 5000 }
-        source: { $ref: "#/components/schemas/IdeaSuggestionSource" }
-    IdeaSuggestionCreatedResponse:
+        content: { type: string, minLength: 1, maxLength: 5000 }
+        topic: { type: [string, "null"], maxLength: 200, description: "null or empty clears it." }
+        platform:
+          type: [string, "null"]
+          description: "null clears it."
+          enum: [instagram, tiktok, youtube, linkedin, twitter, facebook, pinterest, bluesky, threads, mastodon, gbp, null]
+    RecentIdeaResponse:
       type: object
       required: [success, data]
       properties:
         success: { const: true }
-        data:
-          type: object
-          required: [id]
-          properties:
-            id: { type: string }
+        data: { $ref: "#/components/schemas/RecentIdea" }
         meta: { type: object }
-    ConvertIdeaSuggestionRequest:
-      type: object
-      required: [content]
-      properties:
-        content: { type: string, minLength: 1, maxLength: 5000 }
-        topic: { type: string, maxLength: 200 }
-        platform:
-          type: string
-          enum: [instagram, tiktok, youtube, linkedin, twitter, facebook, pinterest, bluesky, threads, mastodon, gbp]
     IdeaCreatedResponse:
       type: object
       required: [success, data]
@@ -675,74 +675,76 @@ paths:
         "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "404": { description: Unknown client, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "429": { description: Rate limited / insufficient tokens, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-  /v1/ideas/suggestions:
-    get:
-      operationId: listIdeaSuggestions
-      summary: List the workspace's idea suggestions, newest first
-      description: >-
-        Clips saved as suggestions (for example from the Sydium Chrome extension),
-        waiting to be reviewed into ideas. Readable without an active plan;
-        `canSave` says whether new suggestions and ideas can be saved.
-      responses:
-        "200":
-          description: Suggestions
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/IdeaSuggestionsResponse" }
-        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/ideas:
     post:
-      operationId: createIdeaSuggestion
-      summary: Save a clip as an idea suggestion
+      operationId: saveClipAsIdea
+      summary: Save a clip as an idea in the content library
+      description: >-
+        Used by the Sydium Chrome extension. The text is saved verbatim, with the
+        page it came from, and appears in the app's Ideas tab at once.
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/CreateIdeaSuggestionRequest" }
+            schema: { $ref: "#/components/schemas/SaveClipRequest" }
       responses:
         "201":
-          description: Suggestion saved
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/IdeaSuggestionCreatedResponse" }
-        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-        "403": { description: Forbidden (scope/permission, or no active plan), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-  /v1/ideas/suggestions/{id}:
-    delete:
-      operationId: deleteIdeaSuggestion
-      summary: Discard an idea suggestion
-      parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
-      responses:
-        "204": { description: Discarded }
-        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-        "404": { description: No such suggestion, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-  /v1/ideas/suggestions/{id}/convert:
-    post:
-      operationId: convertIdeaSuggestion
-      summary: Turn a suggestion into an idea in the content library
-      description: >-
-        Creates the idea and removes the suggestion in one transaction. A suggestion
-        already converted or discarded returns 404 and nothing is written.
-      parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ConvertIdeaSuggestionRequest" }
-      responses:
-        "201":
-          description: Idea created
+          description: Idea saved
           content:
             application/json:
               schema: { $ref: "#/components/schemas/IdeaCreatedResponse" }
         "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-        "403": { description: Forbidden (scope/permission, or no active plan), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-        "404": { description: No such suggestion, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: "Forbidden (scope/permission, or no active plan)", content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
         "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/ideas/recent:
+    get:
+      operationId: listRecentExtensionIdeas
+      summary: The ideas you saved from the Chrome extension, newest first
+      description: >-
+        Only ideas the signed-in user saved through POST /v1/ideas, up to 50.
+        Readable without an active plan; `canSave` says whether new ideas can be saved.
+      responses:
+        "200":
+          description: Recently saved ideas
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RecentIdeasResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /v1/ideas/{id}:
+    patch:
+      operationId: updateExtensionIdea
+      summary: Edit an idea you saved from the Chrome extension
+      description: >-
+        Only an idea the signed-in user saved through POST /v1/ideas. Any other id
+        returns 404 and nothing is written.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateIdeaRequest" }
+      responses:
+        "200":
+          description: The updated idea
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RecentIdeaResponse" }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: "Forbidden (scope/permission, or no active plan)", content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "404": { description: No such idea saved from the extension by you, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+    delete:
+      operationId: deleteExtensionIdea
+      summary: Delete an idea you saved from the Chrome extension
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted }
+        "401": { description: Unauthenticated, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: Forbidden (scope/permission), content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "404": { description: No such idea saved from the extension by you, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
   /v1/analytics:
     get:
       operationId: getAnalytics
