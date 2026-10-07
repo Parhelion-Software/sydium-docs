@@ -82,7 +82,7 @@ The agent calls `list_accounts`, `generate_caption`, and `publish_post` (with `s
     Any MCP-compatible client - Claude (desktop and web), ChatGPT, Cursor, and others. See [Client setup](/mcp/connect).
   </Accordion>
   <Accordion title="Can the agent post videos and images?">
-    Yes. `add_media` stores an image or video and returns the URL that `publish_post` needs, and it tells you which platforms will accept the file before you schedule anything. Give it a public link to the file, or - in ChatGPT on the web - drag the file straight into the conversation. Claude connectors cannot pass attachments yet, so there a link is the way in.
+    Yes. `add_media` stores an image or video and returns the URL that `publish_post` needs, and it tells you which platforms will accept the file before you schedule anything. Give it a public link to the file, or - in ChatGPT on the web - drag the file straight into the conversation. Claude chat connectors cannot pass attachments yet, so there a link is the way in. An agent that runs on your computer, like Claude Code, can upload a file straight from your disk with `create_upload_url`, no link needed.
   </Accordion>
   <Accordion title="What can it access?">
     Only the scopes you approve on the consent screen, and never more than your own team role allows.

@@ -66,7 +66,7 @@ Store an image or video in Sydium and return the media URL that `publish_post` a
 
 Pass **either** `file` (a file attached to the conversation) **or** `url` (a direct link to the image or video itself, not a web page containing it). Returns the media URL plus its measured size, dimensions and duration, and `acceptedBy` / `rejectedBy` - which platforms will take this file.
 
-Supported: `jpeg`, `png`, `gif`, `webp`, `mp4`, `mov`, `webm`, up to 50MB. HEIC and AVIF (the iPhone photo defaults) are not supported - convert to JPEG first.
+Supported: `jpeg`, `png`, `gif`, `webp`, `mp4`, `mov`, `webm`, up to 200MB. For a larger video, or a file on the user's own computer, see `create_upload_url`. HEIC and AVIF (the iPhone photo defaults) are not supported - convert to JPEG first.
 
 The media is removed once its post publishes, so a URL cannot be reused for a second post. Call `add_media` again.
 
@@ -81,10 +81,31 @@ The media is removed once its post publishes, so a URL cannot be reused for a se
 </ParamField>
 
 <Note>
-  **File attachments are ChatGPT-only today.** ChatGPT reads the tool's file parameter declaration and passes attachments through, which is what makes drag-and-drop work - on the **web** client; ChatGPT mobile currently sends incomplete file references. Claude connectors have no equivalent mechanism, so there `url` is the only path. If a user wants to post a file from their device and attaching it is not available, ask them for a public link.
+  **File attachments are ChatGPT-only today.** ChatGPT reads the tool's file parameter declaration and passes attachments through, which is what makes drag-and-drop work - on the **web** client; ChatGPT mobile currently sends incomplete file references. Claude chat connectors have no equivalent mechanism, so there `url` is the only path. If a user wants to post a file from their device and attaching it is not available, ask them for a public link - or, in an agent that runs on their computer (Claude Code), use `create_upload_url`.
 </Note>
 
 `add_media` is for real photos and videos. Do not generate or upload placeholder or text-only images to stand in for carousel slides - use `draft_carousel`.
+
+## create_upload_url
+
+<ParamField path="scope" type="media:write" />
+
+Upload a file from the user's own computer. For agents that can run shell commands on that machine, such as Claude Code: `add_media` can only fetch a public link, and a file on the user's disk has none. It is also the way in for a video over `add_media`'s 200MB limit - up to 2GB for video, 50MB for images.
+
+Returns a one-time `uploadUrl` (valid for an hour) and the `url` to pass to `publish_post` or `update_post`. The agent PUTs the file's bytes to `uploadUrl` with `Content-Type` set to exactly the returned `contentType`; the returned `curl` field is that command, with `FILE` standing for the path:
+
+```bash
+curl --fail -X PUT -H 'Content-Type: video/mp4' --upload-file '/Users/me/reel.mp4' '<uploadUrl>'
+```
+
+The upload is bound to the declared size, so the file must be exactly `fileSize` bytes. Unlike `add_media`, the file is not measured, so no `acceptedBy` / `rejectedBy` is returned; `publish_post` still checks the file exists before scheduling. The media is removed once its post publishes.
+
+<ParamField body="contentType" type="string" required>
+  The file's MIME type: `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `video/mp4`, `video/quicktime` (`.mov`) or `video/webm`.
+</ParamField>
+<ParamField body="fileSize" type="integer" required>
+  The file's exact size in bytes.
+</ParamField>
 
 ## draft_carousel
 
