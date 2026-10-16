@@ -86,12 +86,27 @@ components:
             properties:
               platform: { type: string }
               postType: { type: string }
-              options: { type: object }
+              options:
+                type: object
+                description: >-
+                  Per-platform settings, with the same names on every platform (never prefixed
+                  with the platform): firstComment, thread, title, coverUrl, and the platform's
+                  own (YouTube category and tags, TikTok privacyLevel...). The list per platform,
+                  with types and limits, is `options` in GET /v1/capabilities. An unknown option,
+                  a wrong type or a text over its limit is refused with 422 naming it.
+              caption:
+                type: string
+                description: >-
+                  This target's own caption, overriding the shared one. Use it when one
+                  platform's limit is shorter than the rest - X allows 280 where LinkedIn
+                  allows 3000. A caption longer than the target platform's captionLimit
+                  (see GET /v1/capabilities) is refused with 422 at creation rather than
+                  silently truncated.
     UpdatePostRequest:
       type: object
       description: >-
-        At least one of caption/media/scheduleAt must be present. Fields not sent are left
-        unchanged; media:[] clears media. The platform set cannot be changed here.
+        At least one of caption/media/scheduleAt/options must be present. Fields not sent are
+        left unchanged; media:[] clears media. The platform set cannot be changed here.
       properties:
         caption: { type: string }
         clientId:
@@ -99,6 +114,16 @@ components:
           description: Optional agency client id (see GET /v1/clients) to scope the edit to that client's posts.
         media: { type: array, items: { type: string } }
         scheduleAt: { type: string, format: date-time }
+        options:
+          type: object
+          description: >-
+            Per-platform settings to change, keyed by platform - the same names, and the same
+            refusals, as targets[].options at creation. MERGED into the settings the post
+            already has, so sending one key leaves the others alone; null clears one. Example:
+            {"youtube": {"firstComment": "...", "category": "27"}}.
+          additionalProperties:
+            type: object
+            additionalProperties: true
     GenerateRequest:
       type: object
       required: [topic]
@@ -171,6 +196,19 @@ components:
         maxMediaItems: { type: integer }
         mediaTypes: { type: array, items: { type: string } }
         media: { type: [object, "null"] }
+        options:
+          type: array
+          description: Every option targets[].options accepts on this platform.
+          items:
+            type: object
+            required: [name, type, description]
+            properties:
+              name: { type: string }
+              type: { type: string }
+              values: { type: array, items: { type: string } }
+              maxLength: { type: integer }
+              maxItems: { type: integer }
+              description: { type: string }
     PlatformCapabilitiesResponse:
       type: object
       required: [success, data, meta]
@@ -242,12 +280,23 @@ components:
         postId: { type: [string, "null"] }
         url: { type: [string, "null"] }
         error: { type: [object, "null"] }
+        options:
+          type: object
+          description: >-
+            The options this target will publish (or published) with, under the same names
+            targets[].options takes - e.g. firstComment, category, tags.
+          additionalProperties: true
     Operation:
       type: object
       required: [id, status, targets]
       properties:
         id: { type: string }
         status: { type: string, enum: [scheduled, processing, completed, partially_failed, partially_cancelled, failed, cancelled] }
+        # The FULL caption. The listing endpoint truncates at 280 characters to
+        # keep a whole schedule cheap; this reads one named operation, so it
+        # does not. Optional rather than required: an operation whose documents
+        # predate this field returns without it.
+        caption: { type: string }
         targets: { type: array, items: { $ref: "#/components/schemas/OperationTarget" } }
     OperationResponse:
       type: object
