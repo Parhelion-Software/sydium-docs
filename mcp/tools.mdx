@@ -25,7 +25,7 @@ List the agency clients under this team - each with its `id`, `name`, and `statu
 
 <ParamField path="scope" type="capabilities:read" />
 
-Per-platform posting limits, formats, and supported post types.
+Per-platform posting limits, formats, supported post types, and the `options` each platform accepts (names, types, limits).
 
 <ParamField body="platform" type="string" optional>
   A single platform (for example `instagram`, `youtube`, `linkedin`). Omit to get every platform.
@@ -165,17 +165,32 @@ Publish now, or schedule for later, to one or more platforms. Returns an operati
   A future timestamp with offset (for example `2026-07-01T09:00:00Z`). Omit to publish immediately.
 </ParamField>
 <ParamField body="targets" type="object[]" required>
-  1-10 targets, each `{ platform, postType?, options? }`. `postType` and `options` are platform-specific (for example a YouTube `short`).
+  1-10 targets, each `{ platform, postType?, caption?, options? }`. `postType` is platform-specific (for example a YouTube `short`). See [Per-platform options](#per-platform-options) for `options`.
 </ParamField>
 <ParamField body="clientId" type="string" optional>
   An agency client id (see `list_clients`). When set, the post publishes using that client's connected accounts. Connectivity is checked against the client, not the team.
 </ParamField>
 
+### Per-platform options
+
+`options` uses the **same names on every platform**, never prefixed with the platform:
+
+| Option | Platforms | Value |
+|---|---|---|
+| `firstComment` | Instagram, Facebook, LinkedIn, YouTube, TikTok | A string, posted as a comment right after the post publishes |
+| `thread` | X, Bluesky, Threads, Mastodon | An array of strings, chained under the first post |
+| `title` | All (YouTube, TikTok and Pinterest show it) | A string |
+| `coverUrl` | Instagram, Facebook, LinkedIn, YouTube, Pinterest, Google Business | A Sydium media URL from `add_media` or `create_upload_url` |
+
+Plus each platform's own, for example YouTube `category` (the id as a string, `"27"` is Education), `tags` and `visibility`; TikTok `privacyLevel` and `musicUsageConfirmed`; Pinterest `pinterestBoardId`; Google Business `ctaActionType` and `ctaUrl`.
+
+The complete list for each platform, with types and character limits, is `options` in `get_platform_capabilities`. An unknown option, a wrong type, or a text over its limit is **refused with an error naming it** (with the likely right name, for example "did you mean `firstComment`?"). Nothing is silently dropped or cut.
+
 ## get_post_status
 
 <ParamField path="scope" type="posts:read" />
 
-Per-target status of a publish or schedule operation.
+Per-target status of a publish or schedule operation, with the options each target will publish with (first comment, category, tags...) and the full caption.
 
 <ParamField body="id" type="string" required>
   The operation `id` returned by `publish_post`.
@@ -198,6 +213,9 @@ Edit a scheduled operation: change its `caption`, `media`, and/or `scheduleAt`. 
 </ParamField>
 <ParamField body="scheduleAt" type="string (ISO 8601)" optional>
   A new future timestamp with offset. The scheduled publish is moved to this time.
+</ParamField>
+<ParamField body="options" type="object" optional>
+  Per-platform options to change, keyed by platform, for example `{"youtube": {"firstComment": "...", "category": "27"}}`. Same names and the same refusals as `publish_post`. Merged into what the post already has; `null` clears an option.
 </ParamField>
 <ParamField body="clientId" type="string" optional>
   An agency client id (see `list_clients`). When set, scopes the edit to that client's post.
